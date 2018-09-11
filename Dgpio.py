@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+import logging
 from subproc import Send_Command
 
 GPIOCTRL_0 = 0x10000600
@@ -10,8 +11,24 @@ GPIODATA_0 = 0x10000620
 GPIODATA_1 = 0x10000624
 GPIODATA_2 = 0x10000628
 
+# basic configuration
+#logging.basicConfig(level=logging.DEBUG,
+#                    format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
+#                    datefmt='%m-%d %H:%M',
+#                    handlers = [logging.FileHandler('/DaBai/python/system.log', 'a+', 'utf-8'),])
+# define handler output to sys.stderr
+#console = logging.StreamHandler()
+#console.setLevel(logging.INFO)
+# setting output protocol
+#formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
+# handler setting output protocol
+#console.setFormatter(formatter)
+# add hander into root logger
+#logging.getLogger('').addHandler(console)
+logger_gpio = logging.getLogger('GPIO_LOG')
+
 def GetGpio(gpio_num) :
-    '''print 'in GetGpio gpio_num = ', gpio_num'''
+    logger_gpio.info('into get gpio function~~!!')
     gpio_div = gpio_num / 32
     gpio_mod = gpio_num % 32
     if gpio_div == 0 :
@@ -21,11 +38,11 @@ def GetGpio(gpio_num) :
     elif gpio_div == 2 :
         reg_add = GPIODATA_2
     else :
-        print 'Gpio Number Error~~!!!'
+        logger_gpio.error('Gpio Number Error~~!!!')
     command = 'devmem 0x{:08x}'.format(reg_add)
-    print 'GetGpio command = {}'.format(command)
+    logger_gpio.debug('GetGpio command = {}'.format(command))
     original_val = int(Send_Command(command), 16)
-    print 'at GetGpio original_val = 0x{:08x}'.format(original_val)
+    logger_gpio.debug('at GetGpio original_val = 0x{:08x}'.format(original_val))
     original_val ^= (1 << gpio_mod)
     if original_val == 0 :
         return 1
@@ -34,6 +51,7 @@ def GetGpio(gpio_num) :
 
 
 def SetGpio(gpio_num, val) :
+    logger_gpio.info('into set gpio function~~!!')
     gpio_div = gpio_num / 32
     gpio_mod = gpio_num % 32
     if gpio_div == 0 :
@@ -43,22 +61,23 @@ def SetGpio(gpio_num, val) :
     elif gpio_div == 2 :
         reg_add = GPIODATA_2
     else :
+        logger_gpio.error('Gpio Number Error~~!!!')
         return -1
-        print 'Gpio Number Error~~!!!'
 
     command = 'devmem 0x{:08x}'.format(reg_add)
-    print 'SetGpio command = {}'.format(command)
+    logger_gpio.debug('SetGpio command = {}'.format(command))
     original_val = int(Send_Command(command), 16)
-    print 'original_val = 0x{:08x}'.format(original_val)
+    logger_gpio.debug('original_val = 0x{:08x}'.format(original_val))
     if val == 1 :
         original_val |= (val << gpio_mod)
     else :
         original_val &= ~(1 << gpio_mod)
     command = 'devmem 0x{:08x} 32 0x{:08x}'.format(reg_add, original_val)
-    print 'SetGpio command = {}'.format(command)
+    logger_gpio.debug('SetGpio command = {}'.format(command))
     Send_Command(command)
 
 def GpioInitial(gpio_num, mode, val) :
+    logger_gpio.info('into Gpio Initialization~~!!')
     gpio_div = gpio_num / 32
     gpio_mod = gpio_num % 32
 
@@ -69,19 +88,19 @@ def GpioInitial(gpio_num, mode, val) :
     elif gpio_div == 2 :
         reg_add = GPIOCTRL_2
     else :
+        logger_gpio.error('Gpio Number Error~~!!!')
         return -1
-        print 'Gpio Number Error~~!!!'
 
     command = 'devmem 0x{:08x}'.format(reg_add)
     original_val = int(Send_Command(command), 16)
-    print 'mode original_val = 0x{:08x}'.format(original_val)
+    logger_gpio.debug('mode original_val = 0x{:08x}'.format(original_val))
     if mode == 1 :
         original_val |= (1 << gpio_mod)
     else :
         original_val &= ~(1 << gpio_mod)
-    print 'mode setting_val = 0x{:08x}'.format(original_val)
+    logger_gpio.debug('mode setting_val = 0x{:08x}'.format(original_val))
     command = 'devmem 0x{:08x} 32 0x{:08x}'.format(reg_add, original_val)
-    print 'GpioInitial command = {}'.format(command)
+    logger_gpio.debug('GpioInitial command = {}'.format(command))
     Send_Command(command)
     command = 'devmem 0x{:08x}'.format(reg_add)
     change_val = int(Send_Command(command), 16)
@@ -97,24 +116,24 @@ def GpioInitial(gpio_num, mode, val) :
         elif gpio_div == 2 :
             reg_add = GPIODATA_2
         else :
+            logger_gpio.error('Gpio Number Error~~!!!')
             return -1
-            print 'Gpio Number Error~~!!!'
 
         command = 'devmem 0x{:08x}'.format(reg_add)
         original_val = int(Send_Command(command), 16)
-        print 'GpioInitial Get Pin val = 0x{:08x}'.format(original_val)
+        logger_gpio.debug('GpioInitial Get Pin val = 0x{:08x}'.format(original_val))
         if val == 1 :
             original_val |= (1 << gpio_mod)
         else :
             original_val &= ~(1 << gpio_mod)
-        print 'GpioInitial setting Pin val = 0x{:08x}'.format(original_val)
+        logger_gpio.debug('GpioInitial setting Pin val = 0x{:08x}'.format(original_val))
         command = 'devmem 0x{:08x} 32 0x{:08x}'.format(reg_add, original_val)
-        print 'GpioInitial Set Pin Val command = {}'.format(command)
+        logger_gpio.debug('GpioInitial Set Pin Val command = {}'.format(command))
         Send_Command(command)
         command = 'devmem 0x{:08x}'.format(reg_add)
         change_val = int(Send_Command(command), 16)
         if (original_val & (1 << gpio_mod)) != (change_val & (1 << gpio_mod)) :
-            print 'Pin Val setting faild~~~!!!'
+            logger_gpio.error('Pin Val setting faild~~~!!!')
             return -1
 
     return 1
