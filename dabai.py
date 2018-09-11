@@ -89,7 +89,7 @@ if GpioInitial(GPIO_P15_NUM, DIRECT_IN, 0) != 1 :
 rxbuf = []
 filebuf = []
 SetBMModuleMode(0)
-#BTTransferUart('/DaBai/python/RxCommTmp.txt', rxbuf, filebuf)
+BTTransferUart('/DaBai/python/RxCommTmp.txt', rxbuf, filebuf)
 #ChangBTName('/DaBai/python/RxCommTmp.txt', rxbuf, filebuf)
 #GetBTModuleName('/DaBai/python/HostDeviceInfo.json', rxbuf)
 #GetBTModuleInof('/DaBai/python/HostDeviceInfo.json', rxbuf, filebuf)

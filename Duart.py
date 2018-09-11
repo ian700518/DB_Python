@@ -21,12 +21,7 @@ logger_uart = logging.getLogger('UART_LOG')
 
 def OpenSerial(dev, serbaud, serbit, serparity, serstop, sertimeout) :
     logger_uart.info('into Serial Open function')
-    logger_uart.warning('dev : {:s}\
-                     Baudrate : {:d}\
-                     Datalength : {:d}\
-                     Parity : {:d}\
-                     Stopbit : {:d}\
-                     Timeout : {:d}'.format(dev, serbaud, serbit, serparity, serstop, sertimeout))
+    logger_uart.warning('dev : {:s},\n Baudrate : {:d},\n Datalength : {:d},\n Parity : {:s},\n Stopbit : {:d},\n Timeout : {:f}ms\n'.format(dev, serbaud, serbit, serparity, serstop, (sertimeout * 1000)))
     if serparity == 'O' or serparity == 'o' :
         sparity = serial.PARITY_ODD
     elif serparity == 'E' or serparity == 'e' :
