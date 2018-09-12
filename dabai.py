@@ -2,6 +2,7 @@
 
 import logging
 import serial
+import json
 from subproc import Send_Command
 from Dgpio import SetGpio
 from Dgpio import GetGpio
@@ -13,14 +14,16 @@ from bt import SetBTModuleName
 from bt import ChangBTName
 from bt import BTTransferUart
 from Duart import OpenSerial
+from subproc import ChargeDevice
+from subproc import CheckCHGDevInfo
+from subproc import GetChgDevFromFile
 
 # basic configuration
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
                     datefmt='%m-%d %H:%M',
                     filename='/DaBai/python/system.log',
-                    filemode='a+')
-#                    handlers = [logging.FileHandler('/DaBai/python/system.log', 'a+', 'utf-8'),])
+                    filemode='w+')
 # define handler output to sys.stderr
 console = logging.StreamHandler()
 console.setLevel(logging.INFO)
@@ -55,10 +58,12 @@ GPIO_EAN_NUM = 11
 DIRECT_OUT = 1
 DIRECT_IN = 0
 
-logging.debug('mt7688_pinmux set i2c gpio receive = {}'.format(Send_Command('mt7688_pinmux set i2c gpio')))
-logging.debug('mt7688_pinmux set uart1 gpio receive = {}'.format(Send_Command('mt7688_pinmux set uart1 gpio')))
-logging.debug('mt7688_pinmux set pwm0 gpio receive = {}'.format(Send_Command('mt7688_pinmux set pwm0 gpio')))
-logging.debug('mt7688_pinmux set pwm1 gpio receive = {}'.format(Send_Command('mt7688_pinmux set pwm1 gpio')))
+ChgDev = []
+
+Send_Command('mt7688_pinmux set i2c gpio')
+Send_Command('mt7688_pinmux set uart1 gpio')
+Send_Command('mt7688_pinmux set pwm0 gpio')
+Send_Command('mt7688_pinmux set pwm1 gpio')
 
 if GpioInitial(GPIO_USB1PWR_NUM, DIRECT_OUT, 1) != 1 :
     logging.error('GPIO_USB1PWR_NUM Initialization faild~~~!!!')
@@ -88,8 +93,23 @@ if GpioInitial(GPIO_P15_NUM, DIRECT_IN, 0) != 1 :
 
 rxbuf = []
 filebuf = []
+command_idx = 0
+ChgDevCt = 0
 SetBMModuleMode(0)
-BTTransferUart('/DaBai/python/RxCommTmp.txt', rxbuf, filebuf)
+
+ChgDevCt = GetChgDevFromFile('/DaBai/python/OnlineChgList.json', ChgDev)
+
+while 1 :
+    command_idx = BTTransferUart('/DaBai/python/RxCommTmp.txt', rxbuf, filebuf)
+    if command_idx == 1 :
+        logging.debug('command_idx is 1 ~~!!')
+    elif command_idx == 2 :
+        logging.debug('command_idx is 2 ~~!!')
+        ChgDevCt = CheckCHGDevInfo('/DaBai/python/RxCommTmp.txt', ChgDev, ChgDevCt)
+    elif command_idx == 3 :
+        logging.debug('command_idx is 3 ~~!!')
+
+
 #ChangBTName('/DaBai/python/RxCommTmp.txt', rxbuf, filebuf)
 #GetBTModuleName('/DaBai/python/HostDeviceInfo.json', rxbuf)
 #GetBTModuleInof('/DaBai/python/HostDeviceInfo.json', rxbuf, filebuf)

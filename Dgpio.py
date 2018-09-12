@@ -11,20 +11,6 @@ GPIODATA_0 = 0x10000620
 GPIODATA_1 = 0x10000624
 GPIODATA_2 = 0x10000628
 
-# basic configuration
-#logging.basicConfig(level=logging.DEBUG,
-#                    format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
-#                    datefmt='%m-%d %H:%M',
-#                    handlers = [logging.FileHandler('/DaBai/python/system.log', 'a+', 'utf-8'),])
-# define handler output to sys.stderr
-#console = logging.StreamHandler()
-#console.setLevel(logging.INFO)
-# setting output protocol
-#formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
-# handler setting output protocol
-#console.setFormatter(formatter)
-# add hander into root logger
-#logging.getLogger('').addHandler(console)
 logger_gpio = logging.getLogger('GPIO_LOG')
 
 def GetGpio(gpio_num) :

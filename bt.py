@@ -9,20 +9,6 @@ from subproc import Send_Command
 from Dgpio import SetGpio
 from Duart import OpenSerial
 
-# basic configuration
-#logging.basicConfig(level=logging.DEBUG,
-#                    format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
-#                    datefmt='%m-%d %H:%M',
-#                    handlers = [logging.FileHandler('/DaBai/python/system.log', 'a+', 'utf-8'),])
-# define handler output to sys.stderr
-#console = logging.StreamHandler()
-#console.setLevel(logging.INFO)
-# setting output protocol
-#formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
-# handler setting output protocol
-#console.setFormatter(formatter)
-# add hander into root logger
-#logging.getLogger('').addHandler(console)
 logger_BTM = logging.getLogger('BTModule_LOG')
 
 serial_path = '/dev/ttyS2'
@@ -115,7 +101,6 @@ def GetBTModuleInof(path, rxbuf, filebuf) :
             logger_BTM.debug('python to json is {}'.format(text_json))
             fp.seek(os.SEEK_SET);
             fp.write(text_json)
-            fp.close()
     Dser.close()
 
 def GetBTModuleName(path, rxbuf) :
@@ -152,7 +137,6 @@ def GetBTModuleName(path, rxbuf) :
                 logger_BTM.debug('python to json is {}'.format(text_json))
                 fp.seek(os.SEEK_SET)
                 fp.write(text_json)
-                fp.close()
         Dser.close()
         break
 
@@ -231,7 +215,6 @@ def ChangBTName(path, rxbuf, filebuf) :
         dict_text = json.loads(s)
         LocalBTMac = dict_text['Bluetooth MAC Address']
         logger_BTM.debug('LocalBTMac is {}'.format(LocalBTMac))
-        fp.close()
 
     with open(path, 'r+') as fp :
         s = fp.read(512)
@@ -239,7 +222,6 @@ def ChangBTName(path, rxbuf, filebuf) :
         CommBTMac = dict_text['BTMac']
         NewBTName = dict_text['BTName']
         logger_BTM.debug('BTMac is {}, BTName is {}'.format(CommBTMac, NewBTName))
-        fp.close()
 
     if LocalBTMac == CommBTMac :
         logger_BTM.debug('LocalBTMac equal to CommBTMac')
@@ -268,11 +250,11 @@ def BTTransferUart(path, rxbuf, filebuf) :
     rxbuf = []
     filebuf = []
     IOSSUFFIX = 'AAEnd'
+    idx = 0
     Dser = OpenSerial(serial_path, serial_baud, serial_bits, serial_parity, serial_stop, serial_timeout)
     rxbuf = Dser.read(RXBUFSIZE)
     #with open('/DaBai/python/RxCommTmp.txt', 'r') as fp :
     #    rxbuf = fp.read(RXBUFSIZE)
-    #    fp.close()
     rxlength = len(rxbuf)
     if rxlength > 0 :
         logger_BTM.debug('rxbuf is {}, length is {}'.format(rxbuf, rxlength))
@@ -284,7 +266,6 @@ def BTTransferUart(path, rxbuf, filebuf) :
             if idx > 0 :
                 with open(path, 'w+') as fp :
                     fp.write(rxbuf)
-                    fp.close()
                 if idx == 2 :
                     with open('/DaBai/python/chongdian.jpeg', 'r') as fp :
                         Sendct = 0
@@ -298,13 +279,12 @@ def BTTransferUart(path, rxbuf, filebuf) :
 
                         if dev_type == 'iOS' :
                             Sendct = Dser.write(IOSSUFFIX)
-                        fp.close()
         else :
             logger_BTM.debug('RX Command is not JSON protocol')
             with open('/DaBai/python/ErrorCmd.txt', 'w+') as fp :
                 fp.write(rxbuf)
-                fp.close()
     Dser.close()
+    return idx
 
 def is_json(json_str) :
     logger_BTM.info('into Check string is json protocol function~~!!')

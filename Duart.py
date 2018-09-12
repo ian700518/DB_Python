@@ -3,20 +3,6 @@
 import logging
 import serial
 
-# basic configuration
-#logging.basicConfig(level=logging.DEBUG,
-#                    format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
-#                    datefmt='%m-%d %H:%M',
-#                    handlers = [logging.FileHandler('/DaBai/python/system.log', 'a+', 'utf-8'),])
-# define handler output to sys.stderr
-#console = logging.StreamHandler()
-#console.setLevel(logging.INFO)
-# setting output protocol
-#formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
-# handler setting output protocol
-#console.setFormatter(formatter)
-# add hander into root logger
-#logging.getLogger('').addHandler(console)
 logger_uart = logging.getLogger('UART_LOG')
 
 def OpenSerial(dev, serbaud, serbit, serparity, serstop, sertimeout) :
