@@ -19,6 +19,21 @@ from subproc import ChargeDevice
 from subproc import CheckCHGDevInfo
 from subproc import GetChgDevFromFile
 from subproc import GetDeviceMACAddr
+from Dgpio import GPIO_SWBTN_NUM
+from Dgpio import GPIO_WAKEUP_NUM
+from Dgpio import GPIO_RESET_NUM
+from Dgpio import GPIO_P04_NUM
+from Dgpio import GPIO_P15_NUM
+from Dgpio import GPIO_P20_NUM
+from Dgpio import GPIO_P24_NUM
+from Dgpio import GPIO_EAN_NUM
+from Dgpio import GPIO_USB1PWR_NUM
+from Dgpio import GPIO_USB2PWR_NUM
+from Dgpio import GPIO_WCEN_NUM
+from Dgpio import GPIO_WCRDY_NUM
+from Dgpio import DIRECT_OUT
+from Dgpio import DIRECT_IN
+from bt import RXBUFSIZE
 
 # basic configuration
 logging.basicConfig(level=logging.DEBUG,
@@ -36,24 +51,6 @@ console.setFormatter(formatter)
 # add hander into root logger
 logging.getLogger('').addHandler(console)
 #logger_DABAI = logging.getLogger('Dabai_LOG')
-
-GPIO_USB1PWR_NUM = 4
-GPIO_USB2PWR_NUM = 5
-GPIO_WCEN_NUM = 18
-GPIO_WCRDY_NUM = 19
-GPIO_SWBTN_NUM = 0
-GPIO_WAKEUP_NUM = 2
-GPIO_RESET_NUM = 3
-GPIO_P04_NUM = 45
-GPIO_P15_NUM = 1
-GPIO_P20_NUM = 46
-GPIO_P24_NUM = 6
-GPIO_EAN_NUM = 11
-
-DIRECT_OUT = 1
-DIRECT_IN = 0
-
-RXBUFSIZE = 256
 
 Send_Command('mt7688_pinmux set i2c gpio')
 Send_Command('mt7688_pinmux set uart1 gpio')

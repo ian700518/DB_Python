@@ -9,20 +9,20 @@ from subproc import Send_Command
 from Dgpio import SetGpio
 from Duart import OpenSerial
 from Duart import UartPara
+from Dgpio import GPIO_SWBTN_NUM
+from Dgpio import GPIO_WAKEUP_NUM
+from Dgpio import GPIO_RESET_NUM
+from Dgpio import GPIO_P04_NUM
+from Dgpio import GPIO_P15_NUM
+from Dgpio import GPIO_P20_NUM
+from Dgpio import GPIO_P24_NUM
+from Dgpio import GPIO_EAN_NUM
+
 
 logger_BTM = logging.getLogger('BTModule_LOG')
 
 BM78SPP05MC2 = 1
 BM78SPP05NC2 = 0
-
-GPIO_SWBTN_NUM = 0
-GPIO_WAKEUP_NUM = 2
-GPIO_RESET_NUM = 3
-GPIO_P04_NUM = 45
-GPIO_P15_NUM = 1
-GPIO_P20_NUM = 46
-GPIO_P24_NUM = 6
-GPIO_EAN_NUM = 11
 
 RXBUFSIZE = 256
 FILESIZE = 4096

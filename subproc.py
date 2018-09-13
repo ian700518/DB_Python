@@ -9,7 +9,6 @@ from subprocess import PIPE
 
 logger_sub = logging.getLogger('SUBP_LOG')
 
-
 class ChargeDevice :
     def __init__(self, idx = 0, type = '', mac = '', account = '', uid = '', STime = 0, CTime = 0,
                     FSTime = '', FCTime = '', CM = 0, RT_H = 0, RT_M = 0) :
