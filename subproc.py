@@ -4,9 +4,11 @@ import logging
 import subprocess
 import json
 import time
+import os
 from subprocess import PIPE
 
 logger_sub = logging.getLogger('SUBP_LOG')
+
 
 class ChargeDevice :
     def __init__(self, idx = 0, type = '', mac = '', account = '', uid = '', STime = 0, CTime = 0,
@@ -131,3 +133,26 @@ def CheckCHGDevInfo(path, CDV, CDCt) :
         CDV[i].DevFormatCTime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(cur_time))
     WriteChageList('/DaBai/python/OnlineChgList.json', CDV, CDCt)
     return CDCt
+
+def GetDeviceMACAddr(path) :
+    logger_sub.info('into Get Device Network Macaddress~~!!')
+    with open('/etc/config/network', 'r') as fp :
+        while 1 :
+            str_net = fp.readline()
+            if str_net != '' :
+                if str_net.find('macaddr') != -1 :
+                    str1_net = str_net[-19 : -2]    # ''' get macaddress xx:xx:xx:xx:xx:xx '''
+                    logger_sub.debug('str1_net : {},str_net : {}'.format(str1_net, str_net))
+                    break
+            else :
+                break
+    with open(path, 'r+') as fp :
+        s= fp.read(512)
+        logger_sub.debug('GetDeviceMACAddr File is {}'.format(s))
+        dict_text = json.loads(s)
+        logger_sub.debug('json to python is {}'.format(dict_text))
+        dict_text['Network MAC Address'] = '{}'.format(str1_net)
+        text_json = json.dumps(dict_text, sort_keys = True, indent = 4, separators = (',',':'))
+        logger_sub.debug('python to json is {}'.format(text_json))
+        fp.seek(os.SEEK_SET)
+        fp.write(text_json)

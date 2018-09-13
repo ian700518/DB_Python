@@ -18,6 +18,7 @@ from Duart import UartPara
 from subproc import ChargeDevice
 from subproc import CheckCHGDevInfo
 from subproc import GetChgDevFromFile
+from subproc import GetDeviceMACAddr
 
 # basic configuration
 logging.basicConfig(level=logging.DEBUG,
@@ -51,6 +52,8 @@ GPIO_EAN_NUM = 11
 
 DIRECT_OUT = 1
 DIRECT_IN = 0
+
+RXBUFSIZE = 256
 
 Send_Command('mt7688_pinmux set i2c gpio')
 Send_Command('mt7688_pinmux set uart1 gpio')
@@ -94,13 +97,14 @@ Dser = OpenSerial(Dser_para)
 while 1 :
     rxbuf = Dser.read(RXBUFSIZE)
     if len(rxbuf) > 0 :
-        if(rxbuf[0] == 0xAA) and (rxbuf[3] == 0x8F) and (rxbuf[4] == 0x01)
+        if (rxbuf[0] == 0xAA) and (rxbuf[3] == 0x8F) and (rxbuf[4] == 0x01) :
             rxbuf = []
             break
 Dser.close()
 GetBTModuleInof('/DaBai/python/HostDeviceInfo.json', rxbuf)
 GetBTModuleName('/DaBai/python/HostDeviceInfo.json', rxbuf)
 BTModuleLeaveConfigMode(rxbuf)
+GetDeviceMACAddr('/DaBai/python/HostDeviceInfo.json')
 
 ChgDevCt = GetChgDevFromFile('/DaBai/python/OnlineChgList.json', ChgDev)
 
