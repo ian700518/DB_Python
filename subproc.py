@@ -9,20 +9,44 @@ from subprocess import PIPE
 logger_sub = logging.getLogger('SUBP_LOG')
 
 class ChargeDevice :
-    def __init__(self, Dev_idx = 0, Dev_type = '', Dev_mac = '', Dev_account = '', Dev_uid = '', StartTime = 0, CurrentTime = 0,
-                    DevFormatSTime = '', DevFormatCTime = '', ChgMode = 0, RemainT_Hr = 0, RemainT_Min = 0) :
-        self.Dev_idx = Dev_idx
-        self.Dev_type = Dev_type
-        self.Dev_mac = Dev_mac
-        self.Dev_account = Dev_account
-        self.Dev_uid = Dev_uid
-        self.StartTime = StartTime
-        self.CurrentTime = CurrentTime
-        self.DevFormatSTime = DevFormatSTime
-        self.DevFormatCTime = DevFormatCTime
-        self.ChgMode = ChgMode
-        self.RemainT_Hr = RemainT_Hr
-        self.RemainT_Min = RemainT_Min
+    def __init__(self, idx = 0, type = '', mac = '', account = '', uid = '', STime = 0, CTime = 0,
+                    FSTime = '', FCTime = '', CM = 0, RT_H = 0, RT_M = 0) :
+        self.Dev_idx = idx
+        self.Dev_type = type
+        self.Dev_mac = mac
+        self.Dev_account = account
+        self.Dev_uid = uid
+        self.StartTime = STime
+        self.CurrentTime = CTime
+        self.DevFormatSTime = FSTime
+        self.DevFormatCTime = FCTime
+        self.ChgMode = CM
+        self.RemainT_Hr = RT_H
+        self.RemainT_Min = RT_M
+    def getidx(self) :
+        return self.Dev_idx
+    def gettype(self) :
+        return self.Dev_type
+    def getmac(self) :
+        return self.Dev_mac
+    def getaccount(self) :
+        return self.Dev_account
+    def getuid(self) :
+        return self.Dev_uid
+    def getstime(self) :
+        return self.StartTime
+    def getctime(self) :
+        return self.CurrentTime
+    def getfstime(self) :
+        return self.DevFormatSTime
+    def getfctime(self) :
+        return self.DevFormatCTime
+    def getmode(self) :
+        return self.ChgMode
+    def getrth(self) :
+        return self.RemainT_Hr
+    def getrtm(self) :
+        return self.RemainT_Min
 
 def Send_Command(command) :
     p = subprocess.Popen(command, shell = True, stdout = PIPE)
@@ -63,23 +87,9 @@ def GetChgDevFromFile(path, CDV) :
 
 def WriteChageList(path, CDV, CDCt) :
     logger_sub.info('Into Write Charge List function ~~!!')
-    dict = {'Dev_idx':0, 'Dev_type':'', 'Dev_mac':'', 'Dev_account':'', 'Dev_uid':'', 'StartTime':0, 'CurrentTime':0,
-            'DevFormatSTime':'', 'DevFormatCTime':'', 'ChgMode':0, 'RemainT_Hr':0, 'RemainT_Min':0}
     list = []
     for i in range(0, CDCt) :
-        dict['Dev_idx'] = CDV[i].Dev_idx
-        dict['Dev_type'] = CDV[i].Dev_type
-        dict['Dev_mac'] = CDV[i].Dev_mac
-        dict['Dev_account'] = CDV[i].Dev_account
-        dict['Dev_uid'] = CDV[i].Dev_uid
-        dict['StartTime'] = CDV[i].StartTime
-        dict['CurrentTime'] = CDV[i].CurrentTime
-        dict['DevFormatSTime'] = CDV[i].DevFormatSTime
-        dict['DevFormatCTime'] = CDV[i].DevFormatCTime
-        dict['ChgMode'] = CDV[i].ChgMode
-        dict['RemainT_Hr'] = CDV[i].RemainT_Hr
-        dict['RemainT_Min'] = CDV[i].RemainT_Min
-        list.append(dict)
+        list.append(CDV[i].__dict__)
     logger_sub.debug('dict is {}'.format(list))
     json_s = json.dumps(list, sort_keys = True, indent = 2, separators = (',',':'))
     logger_sub.debug('json_s is {}'.format(json_s))
@@ -94,7 +104,7 @@ def CheckCHGDevInfo(path, CDV, CDCt) :
         dict_text = json.loads(s)
     cur_time = time.time()
     for i in range(0, CDCt) :
-        if CDV[i].Dev_uid == dict_text['userId'] :
+        if CDV[i].getuid() == dict_text['userId'] :
             break
     if i == CDCt :
         logger_sub.warning('Get a new charge device ~~~!!!')

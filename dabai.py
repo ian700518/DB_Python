@@ -14,6 +14,7 @@ from bt import SetBTModuleName
 from bt import ChangBTName
 from bt import BTTransferUart
 from Duart import OpenSerial
+from Duart import UartPara
 from subproc import ChargeDevice
 from subproc import CheckCHGDevInfo
 from subproc import GetChgDevFromFile
@@ -35,13 +36,6 @@ console.setFormatter(formatter)
 logging.getLogger('').addHandler(console)
 #logger_DABAI = logging.getLogger('Dabai_LOG')
 
-serial_path = '/dev/ttyS2'
-serial_baud = 57600
-serial_parity = 'N'
-serial_bits = 8
-serial_stop = 1
-serial_timeout = 0.01
-
 GPIO_USB1PWR_NUM = 4
 GPIO_USB2PWR_NUM = 5
 GPIO_WCEN_NUM = 18
@@ -57,8 +51,6 @@ GPIO_EAN_NUM = 11
 
 DIRECT_OUT = 1
 DIRECT_IN = 0
-
-ChgDev = []
 
 Send_Command('mt7688_pinmux set i2c gpio')
 Send_Command('mt7688_pinmux set uart1 gpio')
@@ -93,9 +85,22 @@ if GpioInitial(GPIO_P15_NUM, DIRECT_IN, 0) != 1 :
 
 rxbuf = []
 filebuf = []
+ChgDev = []
 command_idx = 0
 ChgDevCt = 0
 SetBMModuleMode(0)
+Dser_para = UartPara()
+Dser = OpenSerial(Dser_para)
+while 1 :
+    rxbuf = Dser.read(RXBUFSIZE)
+    if len(rxbuf) > 0 :
+        if(rxbuf[0] == 0xAA) and (rxbuf[3] == 0x8F) and (rxbuf[4] == 0x01)
+            rxbuf = []
+            break
+Dser.close()
+GetBTModuleInof('/DaBai/python/HostDeviceInfo.json', rxbuf)
+GetBTModuleName('/DaBai/python/HostDeviceInfo.json', rxbuf)
+BTModuleLeaveConfigMode(rxbuf)
 
 ChgDevCt = GetChgDevFromFile('/DaBai/python/OnlineChgList.json', ChgDev)
 

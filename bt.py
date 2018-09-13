@@ -8,15 +8,9 @@ import logging
 from subproc import Send_Command
 from Dgpio import SetGpio
 from Duart import OpenSerial
+from Duart import UartPara
 
 logger_BTM = logging.getLogger('BTModule_LOG')
-
-serial_path = '/dev/ttyS2'
-serial_baud = 57600
-serial_parity = 'N'
-serial_bits = 8
-serial_stop = 1
-serial_timeout = 0.01
 
 BM78SPP05MC2 = 1
 BM78SPP05NC2 = 0
@@ -68,12 +62,12 @@ def CheckBTCommandCheckSum(Buf) :
         i = i + 1
     return (Cst & 0x00FF)
 
-def GetBTModuleInof(path, rxbuf, filebuf) :
+def GetBTModuleInof(path, rxbuf) :
     logger_BTM.info('into Get BT Module Information function~~!!')
     rxbuf = []
-    filebuf = []
     macaddr = []
-    Dser = OpenSerial(serial_path, serial_baud, serial_bits, serial_parity, serial_stop, serial_timeout)
+    Dser_para = UartPara()
+    Dser = OpenSerial(Dser_para)
     BTBuf = [0xAA, 0x00, 0x01, 0x01]
     BTBuf.append(CheckBTCommandCheckSum(BTBuf))
     logger_BTM.debug('BTBuf[{}]'.format(','.join(hex(x) for x in BTBuf)))
@@ -106,7 +100,8 @@ def GetBTModuleInof(path, rxbuf, filebuf) :
 def GetBTModuleName(path, rxbuf) :
     logger_BTM.info('into Get BT Module Name function~~!!')
     rxbuf = []
-    Dser = OpenSerial(serial_path, serial_baud, serial_bits, serial_parity, serial_stop, serial_timeout)
+    Dser_para = UartPara()
+    Dser = OpenSerial(Dser_para)
     BTBuf = [0xAA, 0x00, 0x01, 0x07]
     BTBuf.append(CheckBTCommandCheckSum(BTBuf))
     logger_BTM.debug('BTBuf[{}]'.format(','.join(hex(x) for x in BTBuf)))
@@ -144,7 +139,8 @@ def SetBTModuleName(rxubf, btname) :
     logger_BTM.info('into Set BT Module Name function~~!!')
     rxbuf = []
     BTMName = []
-    Dser = OpenSerial(serial_path, serial_baud, serial_bits, serial_parity, serial_stop, serial_timeout)
+    Dser_para = UartPara()
+    Dser = OpenSerial(Dser_para)
     lenbtname = len(btname) + 2
     logger_BTM.debug('lenbtname is {:d}'.format(lenbtname))
     BTMName.append(0xAA)
@@ -184,7 +180,8 @@ def SetBTModuleName(rxubf, btname) :
 def BTModuleLeaveConfigMode(rxbuf) :
     logger_BTM.info('into BT Module Leave Config Mode function~~!!')
     rxbuf = []
-    Dser = OpenSerial(serial_path, serial_baud, serial_bits, serial_parity, serial_stop, serial_timeout)
+    Dser_para = UartPara()
+    Dser = OpenSerial(Dser_para)
     BTBuf = [0xAA, 0x00, 0x02, 0x52, 0x00]
     BTBuf.append(CheckBTCommandCheckSum(BTBuf))
     logger_BTM.debug('BTBuf[{}]'.format(','.join(hex(x) for x in BTBuf)))
@@ -225,7 +222,8 @@ def ChangBTName(path, rxbuf, filebuf) :
 
     if LocalBTMac == CommBTMac :
         logger_BTM.debug('LocalBTMac equal to CommBTMac')
-        Dser = OpenSerial(serial_path, serial_baud, serial_bits, serial_parity, serial_stop, serial_timeout)
+        Dser_para = UartPara()
+        Dser = OpenSerial(Dser_para)
         rxbuf = '{} Receive ChangBTName Command~~!!'.format(LocalBTMac)
         Sendct = Dser.write(rxbuf)
         time.sleep(0.01)
@@ -251,7 +249,8 @@ def BTTransferUart(path, rxbuf, filebuf) :
     filebuf = []
     IOSSUFFIX = 'AAEnd'
     idx = 0
-    Dser = OpenSerial(serial_path, serial_baud, serial_bits, serial_parity, serial_stop, serial_timeout)
+    Dser_para = UartPara()
+    Dser = OpenSerial(Dser_para)
     rxbuf = Dser.read(RXBUFSIZE)
     #with open('/DaBai/python/RxCommTmp.txt', 'r') as fp :
     #    rxbuf = fp.read(RXBUFSIZE)
