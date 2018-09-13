@@ -6,18 +6,8 @@ import time
 import serial
 import logging
 from subproc import Send_Command
-from Dgpio import SetGpio
-from Duart import OpenSerial
-from Duart import UartPara
-from Dgpio import GPIO_SWBTN_NUM
-from Dgpio import GPIO_WAKEUP_NUM
-from Dgpio import GPIO_RESET_NUM
-from Dgpio import GPIO_P04_NUM
-from Dgpio import GPIO_P15_NUM
-from Dgpio import GPIO_P20_NUM
-from Dgpio import GPIO_P24_NUM
-from Dgpio import GPIO_EAN_NUM
-
+from Duart import OpenSerial, UartPara
+from Dgpio import SetGpio, GPIO_SWBTN_NUM, GPIO_WAKEUP_NUM, GPIO_RESET_NUM, GPIO_P04_NUM, GPIO_P15_NUM, GPIO_P20_NUM, GPIO_P24_NUM, GPIO_EAN_NUM
 
 logger_BTM = logging.getLogger('BTModule_LOG')
 

@@ -29,6 +29,33 @@ DIRECT_IN = 0
 
 logger_gpio = logging.getLogger('GPIO_LOG')
 
+def PinInitial() :
+    if GpioInitial(GPIO_USB1PWR_NUM, DIRECT_OUT, 1) != 1 :
+        logging.error('GPIO_USB1PWR_NUM Initialization faild~~~!!!')
+    if GpioInitial(GPIO_USB2PWR_NUM, DIRECT_OUT, 1) != 1 :
+        logging.error('GPIO_USB2PWR_NUM Initialization faild~~~!!!')
+    if GpioInitial(GPIO_WCEN_NUM, DIRECT_OUT, 1) != 1 :
+        logging.error('GPIO_WCEN_NUM Initialization faild~~~!!!')
+    if GpioInitial(GPIO_WCRDY_NUM, DIRECT_IN, 0) != 1 :
+        logging.error('GPIO_WCRDY_NUM Initialization faild~~~!!!')
+
+    if GpioInitial(GPIO_SWBTN_NUM, DIRECT_OUT, 0) != 1 :
+        logging.error('GPIO_SWBTN_NUM Initialization faild~~~!!!')
+    if GpioInitial(GPIO_WAKEUP_NUM, DIRECT_OUT, 0) != 1 :
+        logging.error('GPIO_WAKEUP_NUM Initialization faild~~~!!!')
+    if GpioInitial(GPIO_RESET_NUM, DIRECT_OUT, 0) != 1 :
+        logging.error('GPIO_RESET_NUM Initialization faild~~~!!!')
+    if GpioInitial(GPIO_P20_NUM, DIRECT_OUT, 0) != 1 :
+        logging.error('GPIO_P20_NUM Initialization faild~~~!!!')
+    if GpioInitial(GPIO_P24_NUM, DIRECT_OUT, 0) != 1 :
+        logging.error('GPIO_P24_NUM Initialization faild~~~!!!')
+    if GpioInitial(GPIO_EAN_NUM, DIRECT_OUT, 0) != 1 :
+        logging.error('GPIO_EAN_NUM Initialization faild~~~!!!')
+    if GpioInitial(GPIO_P04_NUM, DIRECT_IN, 0) != 1 :
+        logging.error('GPIO_P04_NUM Initialization faild~~~!!!')
+    if GpioInitial(GPIO_P15_NUM, DIRECT_IN, 0) != 1 :
+        logging.error('GPIO_P15_NUM Initialization faild~~~!!!')
+
 def GetGpio(gpio_num) :
     logger_gpio.info('into get gpio function~~!!')
     gpio_div = gpio_num / 32
