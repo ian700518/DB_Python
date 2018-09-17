@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import logging
 from subproc import Send_Command
@@ -58,7 +58,7 @@ def PinInitial() :
 
 def GetGpio(gpio_num) :
     logger_gpio.info('into get gpio function~~!!')
-    gpio_div = gpio_num / 32
+    gpio_div = int(gpio_num / 32)
     gpio_mod = gpio_num % 32
     if gpio_div == 0 :
         reg_add = GPIODATA_0
@@ -81,7 +81,7 @@ def GetGpio(gpio_num) :
 
 def SetGpio(gpio_num, val) :
     logger_gpio.info('into set gpio function~~!!')
-    gpio_div = gpio_num / 32
+    gpio_div = int(gpio_num / 32)
     gpio_mod = gpio_num % 32
     if gpio_div == 0 :
         reg_add = GPIODATA_0
@@ -107,9 +107,10 @@ def SetGpio(gpio_num, val) :
 
 def GpioInitial(gpio_num, mode, val) :
     logger_gpio.info('into Gpio Initialization~~!!')
-    gpio_div = gpio_num / 32
+    gpio_div = int(gpio_num / 32)
     gpio_mod = gpio_num % 32
 
+#    logger_gpio.info('gpio_num is {},gpio_div is {}, gpio_mod is {}'.format(gpio_num, gpio_div, gpio_mod))
     if gpio_div == 0 :
         reg_add = GPIOCTRL_0
     elif gpio_div == 1 :
@@ -134,7 +135,7 @@ def GpioInitial(gpio_num, mode, val) :
     command = 'devmem 0x{:08x}'.format(reg_add)
     change_val = int(Send_Command(command), 16)
     if (original_val & (1 << gpio_mod)) != (change_val & (1 << gpio_mod)) :
-        print 'Mode setting faild~~!!!!'
+        logger_gpio.error('Mode setting faild~~!!!!')
         return -1
 
     if mode == 1 :

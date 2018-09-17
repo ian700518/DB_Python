@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import logging
 import serial
@@ -7,6 +7,7 @@ from Dgpio import SetGpio, GetGpio, GpioInitial, PinInitial
 from bt import SetBMModuleMode, GetBTModuleInof, GetBTModuleName, BTTransferUart, RXBUFSIZE
 from subproc import ChargeDevice, CheckCHGDevInfo, GetChgDevFromFile, GetDeviceMACAddr, Send_Command
 from Duart import OpenSerial, UartPara
+from hsocket import Connect2Ser
 
 # basic configuration
 logging.basicConfig(level=logging.DEBUG,
@@ -40,6 +41,7 @@ PinInitial()
 SetBMModuleMode(0)
 Dser_para = UartPara()
 Dser = OpenSerial(Dser_para)
+Connect2Ser('192.168.100.107', 12345)
 while 1 :
     rxbuf = Dser.read(RXBUFSIZE)
     if len(rxbuf) > 0 :
@@ -56,12 +58,13 @@ ChgDevCt = GetChgDevFromFile('/DaBai/python/OnlineChgList.json', ChgDev)
 
 while 1 :
     command_idx = BTTransferUart('/DaBai/python/RxCommTmp.txt', rxbuf, filebuf)
-    if command_idx == 1 :
+    if command_idx == 1 :   # Set Device Network Information
         logging.debug('command_idx is 1 ~~!!')
-    elif command_idx == 2 :
+    elif command_idx == 2 :   # Devive Send Account and Devive information to check will be charged
         logging.debug('command_idx is 2 ~~!!')
         ChgDevCt = CheckCHGDevInfo('/DaBai/python/RxCommTmp.txt', ChgDev, ChgDevCt)
-    elif command_idx == 3 :
+    elif command_idx == 3 :   # Set Bluetooth Device Name
+        ChangBTName('/DaBai/python/RxCommTmp.txt', rxbuf, filebuf)
         logging.debug('command_idx is 3 ~~!!')
 
 

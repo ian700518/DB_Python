@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import os
 import json
@@ -8,6 +8,7 @@ import logging
 from subproc import Send_Command
 from Duart import OpenSerial, UartPara
 from Dgpio import SetGpio, GPIO_SWBTN_NUM, GPIO_WAKEUP_NUM, GPIO_RESET_NUM, GPIO_P04_NUM, GPIO_P15_NUM, GPIO_P20_NUM, GPIO_P24_NUM, GPIO_EAN_NUM
+from string_utils import *
 
 logger_BTM = logging.getLogger('BTModule_LOG')
 
@@ -275,12 +276,12 @@ def BTTransferUart(path, rxbuf, filebuf) :
     Dser.close()
     return idx
 
-def is_json(json_str) :
-    logger_BTM.info('into Check string is json protocol function~~!!')
-    try:
-        json_object = json.loads(json_str)
-    except ValueError, e:
-        logger_BTM.debug('String is not json procotol~~!!')
-        return False
-    logger_BTM.debug('String is json procotol~~!!')
-    return True
+# def is_json(json_str) :
+#    logger_BTM.info('into Check string is json protocol function~~!!')
+#    try :
+#        json_object = json.loads(json_str)
+#    except ValueError :
+#        logger_BTM.debug('String is not json procotol~~!!')
+#        return False
+#    logger_BTM.debug('String is json procotol~~!!')
+#    return True
