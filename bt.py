@@ -4,6 +4,7 @@ import os
 import json
 import time
 import serial
+import select
 import logging
 from subproc import Send_Command
 from Duart import OpenSerial, UartPara
@@ -64,28 +65,41 @@ def GetBTModuleInof(path, rxbuf) :
     logger_BTM.debug('BTBuf[{}]'.format(','.join(hex(x) for x in BTBuf)))
     Sendct = Dser.write(BTBuf)
     time.sleep(0.01)
-    rxbuf = Dser.read(RXBUFSIZE)
-    #rxbuf = [0xaa, 0x00, 0x0e, 0x80, 0x01, 0x00, 0x22, 0x20, 0x00, 0x01, 0x03, 0xeb, 0x22, 0xf4, 0x81, 0x34, 0x62]
-    if len(rxbuf) > 0 :
-        logger_BTM.debug('GetBTModuleInfo rxbuf[{}]'.format(','.join(hex(x) for x in rxbuf)))
-        with open(path, 'r+') as fp :
-            s = fp.read(512)
-            logger_BTM.debug('File is {}'.format(s))
-            dict_text = json.loads(s)
-            logger_BTM.debug('json to python is {}'.format(dict_text))
-            macaddr.append('{:2x}'.format(rxbuf[9] << 4 | rxbuf[10]))
-            macaddr.append('{:2x}'.format(rxbuf[11]))
-            macaddr.append('{:2x}'.format(rxbuf[12]))
-            macaddr.append('{:2x}'.format(rxbuf[13]))
-            macaddr.append('{:2x}'.format(rxbuf[14]))
-            macaddr.append('{:2x}'.format(rxbuf[15]))
-            logger_BTM.debug('macaddr is {}'.format(macaddr))
-            macstr = ':'.join(macaddr)
-            dict_text['Bluetooth MAC Address'] = '{}'.format(macstr)
-            text_json = json.dumps(dict_text, sort_keys = True, indent = 4, separators=(',',':'))
-            logger_BTM.debug('python to json is {}'.format(text_json))
-            fp.seek(os.SEEK_SET);
-            fp.write(text_json)
+    NoDataCt = 5
+    while 1 :
+        Dser_readable,Dser_writable,Dser_exceptional = select.select([Dser], [], [], 0.03)
+        if Dser_readable :
+            rxbuf.append(ord(Dser.read()))
+            NoDataCt = 5
+            #rxbuf = Dser.read(RXBUFSIZE)
+            #rxbuf = [0xaa, 0x00, 0x0e, 0x80, 0x01, 0x00, 0x22, 0x20, 0x00, 0x01, 0x03, 0xeb, 0x22, 0xf4, 0x81, 0x34, 0x62]
+        else :
+            if len(rxbuf) > 0 :
+                logger_BTM.debug('GetBTModuleInfo rxbuf[{}]'.format(','.join(hex(x) for x in rxbuf)))
+                with open(path, 'r+') as fp :
+                    s = fp.read(512)
+                    logger_BTM.debug('File is {}'.format(s))
+                    dict_text = json.loads(s)
+                    logger_BTM.debug('json to python is {}'.format(dict_text))
+                    macaddr.append('{:2x}'.format(rxbuf[9] << 4 | rxbuf[10]))
+                    macaddr.append('{:2x}'.format(rxbuf[11]))
+                    macaddr.append('{:2x}'.format(rxbuf[12]))
+                    macaddr.append('{:2x}'.format(rxbuf[13]))
+                    macaddr.append('{:2x}'.format(rxbuf[14]))
+                    macaddr.append('{:2x}'.format(rxbuf[15]))
+                    logger_BTM.debug('macaddr is {}'.format(macaddr))
+                    macstr = ':'.join(macaddr)
+                    dict_text['Bluetooth MAC Address'] = '{}'.format(macstr)
+                    text_json = json.dumps(dict_text, sort_keys = True, indent = 4, separators=(',',':'))
+                    logger_BTM.debug('python to json is {}'.format(text_json))
+                    fp.seek(os.SEEK_SET);
+                    fp.write(text_json)
+                    break
+            else :
+                NoDataCt -= 1
+                if NoDateCt == 0 :
+                    logger_BTM.error('Can not Get BT Module Information~~!!')
+                    break
     Dser.close()
 
 def GetBTModuleName(path, rxbuf) :
@@ -96,35 +110,46 @@ def GetBTModuleName(path, rxbuf) :
     BTBuf = [0xAA, 0x00, 0x01, 0x07]
     BTBuf.append(CheckBTCommandCheckSum(BTBuf))
     logger_BTM.debug('BTBuf[{}]'.format(','.join(hex(x) for x in BTBuf)))
+    namebuf = []
+    Sendct = Dser.write(BTBuf)
+    time.sleep(0.01)
+    NoDataCt = 5
     while 1 :
-        namebuf = []
-        Sendct = Dser.write(BTBuf)
-        time.sleep(0.01)
-        rxbuf = Dser.read(RXBUFSIZE)
-        #rxbuf = [0xaa, 0x00, 0x12, 0x80, 0x07, 0x00, 0x44, 0x42, 0x5F, 0x30, 0x30, 0x31, 0x30, 0x30, 0x30, 0x30, 0x30, 0x32, 0x30, 0x30, 0x33, 0x3c]
-        rxlength = len(rxbuf)
-        logger_BTM.debug('rxlength is {}'.format(rxlength))
-        for i in range(0, rxlength - 7) :
-            namebuf.append(rxbuf[i + 6])
-        logger_BTM.debug('namebuf is {}'.format(namebuf))
-        if rxlength > 0 :
-            checksum = CheckBTCommandCheckSum(rxbuf)
-            if checksum != rxbuf[rxlength - 1] :
-                continue
-            btname = '{}'.format(''.join(chr(x) for x in namebuf))
-            logger_BTM.debug('btname is {}'.format(btname))
-            with open(path, 'r+') as fp :
-                s= fp.read(512)
-                logger_BTM.debug('File is {}'.format(s))
-                dict_text = json.loads(s)
-                logger_BTM.debug('json to python is {}'.format(dict_text))
-                dict_text['Bluetooth Device Name'] = '{}'.format(btname)
-                text_json = json.dumps(dict_text, sort_keys = True, indent = 4, separators = (',',':'))
-                logger_BTM.debug('python to json is {}'.format(text_json))
-                fp.seek(os.SEEK_SET)
-                fp.write(text_json)
-        Dser.close()
-        break
+        Dser_readable,Dser_writable,Dser_exceptional = select.select([Dser], [], [], 0.03)
+        if Dser_readable :
+            rxbuf.append(ord(Dser.read()))
+            NoDataCt = 5
+            #rxbuf = Dser.read(RXBUFSIZE)
+            #rxbuf = [0xaa, 0x00, 0x12, 0x80, 0x07, 0x00, 0x44, 0x42, 0x5F, 0x30, 0x30, 0x31, 0x30, 0x30, 0x30, 0x30, 0x30, 0x32, 0x30, 0x30, 0x33, 0x3c]
+        else :
+            if len(rxbuf) > 0 :
+                rxlength = len(rxbuf)
+                logger_BTM.debug('rxlength is {}'.format(rxlength))
+                for i in range(0, rxlength - 7) :
+                    namebuf.append(rxbuf[i + 6])
+                logger_BTM.debug('namebuf is {}'.format(namebuf))
+                checksum = CheckBTCommandCheckSum(rxbuf)
+                if checksum != rxbuf[rxlength - 1] :
+                    continue
+                btname = '{}'.format(''.join(chr(x) for x in namebuf))
+                logger_BTM.debug('btname is {}'.format(btname))
+                with open(path, 'r+') as fp :
+                    s= fp.read(512)
+                    logger_BTM.debug('File is {}'.format(s))
+                    dict_text = json.loads(s)
+                    logger_BTM.debug('json to python is {}'.format(dict_text))
+                    dict_text['Bluetooth Device Name'] = '{}'.format(btname)
+                    text_json = json.dumps(dict_text, sort_keys = True, indent = 4, separators = (',',':'))
+                    logger_BTM.debug('python to json is {}'.format(text_json))
+                    fp.seek(os.SEEK_SET)
+                    fp.write(text_json)
+                break
+            else :
+                NoDataCt -= 1
+                if NoDateCt == 0 :
+                    logger_BTM.error('Can not Get BT Module Name~~!!')
+                    break
+    Dser.close()
 
 def SetBTModuleName(rxubf, btname) :
     logger_BTM.info('into Set BT Module Name function~~!!')
@@ -143,30 +168,51 @@ def SetBTModuleName(rxubf, btname) :
         BTMName.append(ord(i))
     BTMName.append(CheckBTCommandCheckSum(BTMName))
     logger_BTM.debug('BTMName is {}'.format(BTMName))
+    Sendct = Dser.write(BTMName)
+    time.sleep(0.01)
+    NoDataCt = 5
     while 1 :
-        Sendct = Dser.write(BTMName)
-        time.sleep(0.01)
-        rxbuf = Dser.read(RXBUFSIZE)
-        rxlength = len(rxbuf)
-        if rxlength > 0 :
-            checksum = CheckBTCommandCheckSum(rxbuf)
-            if checksum != rxbuf[rxlength - 1] :
-                continue
-            if(rxbuf[0] == 0xAA) and (rxbuf[3] == 0x80) and (rxbuf[4] == 0x08) :
-                time.sleep(0.5)
-                SetGpio(GPIO_RESET_NUM, 0)
-                time.sleep(0.001)
-                SetGpio(GPIO_RESET_NUM, 1)
-                rxbuf = []
-                while 1 :
-                    rxbuf = Dser.read(RXBUFSIZE)
-                    rxlength = len(rxbuf)
-                    if rxlength > 0 :
-                        if(rxbuf[0] == 0xAA) and (rxbuf[3] == 0x8F) and (rxbuf[4] == 0x01) :
-                            break
-                Dser.close()
-                break
-
+        Dser_readable,Dser_writable,Dser_exceptional = select.select([Dser], [], [], 0.03)
+        if Dser_readable :
+            rxbuf.append(ord(Dser.read()))
+            NoDataCt = 5
+            #rxbuf = Dser.read(RXBUFSIZE)
+        else :
+            rxlength = len(rxbuf)
+            if rxlength > 0 :
+                checksum = CheckBTCommandCheckSum(rxbuf)
+                if checksum != rxbuf[rxlength - 1] :
+                    continue
+                if(rxbuf[0] == 0xAA) and (rxbuf[3] == 0x80) and (rxbuf[4] == 0x08) :
+                    time.sleep(0.5)
+                    SetGpio(GPIO_RESET_NUM, 0)
+                    time.sleep(0.001)
+                    SetGpio(GPIO_RESET_NUM, 1)
+                    rxbuf = []
+                    NDCt = 5
+                    while 1 :
+                        Dser_readable,Dser_writable,Dser_exceptional = select.select([Dser], [], [], 0.03)
+                        if Dser_readable :
+                            rxbuf.append(ord(Dser.read()))
+                            NDCt = 5
+                            #rxbuf = Dser.read(RXBUFSIZE)
+                        else :
+                            rxlength = len(rxbuf)
+                            if rxlength > 0 :
+                                if(rxbuf[0] == 0xAA) and (rxbuf[3] == 0x8F) and (rxbuf[4] == 0x01) :
+                                    break
+                            else :
+                                NDCt -= 1
+                                if NDCt == 0 :
+                                    logger_BTM.error('After Set BT Module Name, Rstart Error~~!!')
+                                    break
+                    break
+            else :
+                NoDataCt -= 1
+                if NoDateCt == 0 :
+                    logger_BTM.error('Can not Set BT Module Name~~!!')
+                    break
+    Dser.close()
 
 def BTModuleLeaveConfigMode(rxbuf) :
     logger_BTM.info('into BT Module Leave Config Mode function~~!!')
@@ -176,19 +222,30 @@ def BTModuleLeaveConfigMode(rxbuf) :
     BTBuf = [0xAA, 0x00, 0x02, 0x52, 0x00]
     BTBuf.append(CheckBTCommandCheckSum(BTBuf))
     logger_BTM.debug('BTBuf[{}]'.format(','.join(hex(x) for x in BTBuf)))
+    Sendct = Dser.write(BTBuf)
+    time.sleep(0.01)
+    NoDataCt = 5
     while 1 :
-        Sendct = Dser.write(BTBuf)
-        time.sleep(0.01)
-        rxbuf = Dser.read(RXBUFSIZE)
-        rxlength = len(rxbuf)
-        if rxlength > 0 :
-            checksum = CheckBTCommandCheckSum(rxbuf)
-            if checksum != rxbuf[rxlength - 1] :
-                continue
-            if rxbuf[0] == 0xAA and rxbuf[3] == 0x8F and rxbuf[4] == 0x00 :
-                logger_BTM.info('Comfirm BT Module Leave Config Mode !!!')
-        Dser.close()
-        break
+        Dser_readable,Dser_writable,Dser_exceptional = select.select([Dser], [], [], 0.03)
+        if Dser_readable :
+            rxbuf.append(ord(Dser.read()))
+            NoDataCt = 5
+            #rxbuf = Dser.read(RXBUFSIZE)
+        else :
+            rxlength = len(rxbuf)
+            if rxlength > 0 :
+                checksum = CheckBTCommandCheckSum(rxbuf)
+                if checksum != rxbuf[rxlength - 1] :
+                    continue
+                if rxbuf[0] == 0xAA and rxbuf[3] == 0x8F and rxbuf[4] == 0x00 :
+                    logger_BTM.info('Comfirm BT Module Leave Config Mode !!!')
+                    break
+            else :
+                NoDataCt -= 1
+                if NoDateCt == 0 :
+                    logger_BTM.error('Can not Set BT Module Name~~!!')
+                    break
+    Dser.close()
 
 def ChangBTName(path, rxbuf, filebuf) :
     logger_BTM.info('into Change BT Module Name function~~!!')
@@ -222,13 +279,24 @@ def ChangBTName(path, rxbuf, filebuf) :
         time.sleep(0.001)
         SetGpio(GPIO_RESET_NUM, 1)
         rxbuf = []
+        NoDataCt = 5
         while 1 :
-            rxbuf = Dser.read(512)
-            rxlength = len(rxbuf)
-            if rxlength > 0 :
-                if(rxbuf[0] == 0xAA) and (rxbuf[3] == 0x8F) and (rxbuf[4] == 0x01) :
-                    rxbuf = []
-                    break
+            Dser_readable,Dser_writable,Dser_exceptional = select.select([Dser], [], [], 0.03)
+            if Dser_readable :
+                rxbuf.append(ord(Dser.read()))
+                NoDataCt = 5
+                #rxbuf = Dser.read(512)
+            else :
+                rxlength = len(rxbuf)
+                if rxlength > 0 :
+                    if(rxbuf[0] == 0xAA) and (rxbuf[3] == 0x8F) and (rxbuf[4] == 0x01) :
+                        rxbuf = []
+                        break
+                else :
+                    NoDataCt -= 1
+                    if NoDateCt == 0 :
+                        logger_BTM.error('Can not Set BT Module Name~~!!')
+                        break
         Dsr.close()
         BTModuleChgDevName(rxbuf, NewBTName);
         GetBTModuleName('/DaBai/python/HostDeviceInfo.json', rxbuf, filebuf);
@@ -242,38 +310,44 @@ def BTTransferUart(path, rxbuf, filebuf) :
     idx = 0
     Dser_para = UartPara()
     Dser = OpenSerial(Dser_para)
-    rxbuf = Dser.read(RXBUFSIZE)
-    #with open('/DaBai/python/RxCommTmp.txt', 'r') as fp :
-    #    rxbuf = fp.read(RXBUFSIZE)
-    rxlength = len(rxbuf)
-    if rxlength > 0 :
-        logger_BTM.debug('rxbuf is {}, length is {}'.format(rxbuf, rxlength))
-        if is_json(rxbuf) == True :
-            dict_text = json.loads(rxbuf)
-            idx = int(dict_text['index'], 10)
-            dev_type = dict_text['type']
-            logger_BTM.debug('idx is {}, dev_type is {}'.format(idx, dev_type))
-            if idx > 0 :
-                with open(path, 'w+') as fp :
-                    fp.write(rxbuf)
-                if idx == 2 :
-                    with open('/DaBai/python/chongdian.jpeg', 'r') as fp :
-                        Sendct = 0
-                        while 1 :
-                            filebuf = fp.read(FILESIZE)
-                            if filebuf != '' :
-                                Sendct += Dser.write(filebuf)
-                                logger_BTM.debug('Send total count is {}'.format(Sendct))
-                            else :
-                                break
-
-                        if dev_type == 'iOS' :
-                            Sendct = Dser.write(IOSSUFFIX)
+    while 1 :
+        Dser_readable,Dser_writable,Dser_exceptional = select.select([Dser], [], [], 0.03)
+        if Dser_readable :
+            rxbuf.append(ord(Dser.read()))
+            #rxbuf = Dser.read(RXBUFSIZE)
+        #with open('/DaBai/python/RxCommTmp.txt', 'r') as fp :
+        #    rxbuf = fp.read(RXBUFSIZE)
         else :
-            logger_BTM.debug('RX Command is not JSON protocol')
-            with open('/DaBai/python/ErrorCmd.txt', 'w+') as fp :
-                fp.write(rxbuf)
-    Dser.close()
+            rxlength = len(rxbuf)
+            if rxlength > 0 :
+                logger_BTM.debug('rxbuf is {}, length is {}'.format(rxbuf, rxlength))
+                if is_json(rxbuf) == True :
+                    dict_text = json.loads(rxbuf)
+                    idx = int(dict_text['index'], 10)
+                    dev_type = dict_text['type']
+                    logger_BTM.debug('idx is {}, dev_type is {}'.format(idx, dev_type))
+                    if idx > 0 :
+                        with open(path, 'w+') as fp :
+                            fp.write(rxbuf)
+                        if idx == 2 :
+                            with open('/DaBai/python/chongdian.jpeg', 'rb') as fp :
+                                Sendct = 0
+                                while 1 :
+                                    filebuf = fp.read(FILESIZE)
+                                    if filebuf != '' :
+                                        Sendct += Dser.write(filebuf)
+                                        logger_BTM.debug('Send total count is {}'.format(Sendct))
+                                    else :
+                                        break
+
+                                if dev_type == 'iOS' :
+                                    Sendct = Dser.write(IOSSUFFIX)
+                else :
+                    logger_BTM.debug('RX Command is not JSON protocol')
+                    with open('/DaBai/python/ErrorCmd.txt', 'w+') as fp :
+                        fp.write(rxbuf)
+            Dser.close()
+        break
     return idx
 
 # def is_json(json_str) :
