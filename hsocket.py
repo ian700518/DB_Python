@@ -5,14 +5,26 @@ import logging
 import json
 import time
 import select
+import threading
 from string_utils import *
 from bt import FILESIZE
 
 logger_sock = logging.getLogger('SOCK_LOG')
 
+class dbthread(threading.Thread) :
+    def __init__(self, threadID, name, addressname, portnum) :
+        threading.Thread.__init__(self)
+        self.threadID = threadID
+        self.name = name
+        self.addressname = addressname
+        self.portnum = portnum
+
+    def run(self) :
+        logger_sock.info('Thread Start : {}'.format(self.name))
+        Connect2Ser(self.addressname, self.portnum)
+
 def Connect2Ser(HostAddr, HostPort) :
     logger_sock.info('into Connect to Server function~~!!')
-
     Sendct = 0
     Current = time.time()
     Present = Current

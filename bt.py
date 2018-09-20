@@ -342,8 +342,12 @@ def BTTransferUart(path, rxbuf, filebuf) :
 
                                 if dev_type == 'iOS' :
                                     Sendct = Dser.write(IOSSUFFIX)
+                    else :
+                        logger_BTM.error('RX Command is not include idx key')
+                        with open('/DaBai/python/ErrorCmd.txt', 'w+') as fp :
+                            fp.write(rxbuf)
                 else :
-                    logger_BTM.debug('RX Command is not JSON protocol')
+                    logger_BTM.error('RX Command is not JSON protocol')
                     with open('/DaBai/python/ErrorCmd.txt', 'w+') as fp :
                         fp.write(rxbuf)
             Dser.close()

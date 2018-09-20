@@ -4,13 +4,13 @@ import logging
 import serial
 import json
 import select
-import _thread
+import threading
 import time
 from Dgpio import SetGpio, GetGpio, GpioInitial, PinInitial
 from bt import SetBMModuleMode, GetBTModuleInof, GetBTModuleName, BTModuleLeaveConfigMode, BTTransferUart, RXBUFSIZE
 from subproc import ChargeDevice, CheckCHGDevInfo, GetChgDevFromFile, GetDeviceMACAddr, Send_Command
 from Duart import OpenSerial, UartPara
-from hsocket import Connect2Ser
+from hsocket import dbthread
 
 # basic configuration
 logging.basicConfig(level=logging.DEBUG,
@@ -72,7 +72,8 @@ ChgDevCt = GetChgDevFromFile('/DaBai/python/OnlineChgList.json', ChgDev)
 
 """ Create Pthread"""
 try:
-   _thread.start_new_thread(Connect2Ser, ('192.168.100.107', 12345))
+   thread1 = dbthread(1, 'Thread-1', '192.168.100.107', 12345)
+   thread1.start()
 except:
    logging.error('Thread Create error~~!!')
 

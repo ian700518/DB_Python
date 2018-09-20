@@ -24,6 +24,7 @@ class ChargeDevice :
         self.ChgMode = CM
         self.RemainT_Hr = RT_H
         self.RemainT_Min = RT_M
+
     def getidx(self) :
         return self.Dev_idx
     def gettype(self) :
