@@ -69,18 +69,17 @@ def AddSymbolForMac(str) :
 def GetChgDevFromFile(path, CDV) :
     logger_sub.info('into Get Charge Device From File function~~!!')
     try :
-        fp = open('/DaBai/python/OnlineChgList.json', 'r')
-        json_s = fp.read()
-        list_f = json.loads(json_s)
-        List_len = len(list_f)
-        logger_sub.debug('List_len is {}'.format(List_len))
-        for i in range(0, List_len) :
-            dict = list_f[i]
-            CDV.append(ChargeDevice(dict['Dev_idx'], dict['Dev_type'], dict['Dev_mac'], dict['Dev_account'], dict['Dev_uid'],
-                                        dict['StartTime'], dict['CurrentTime'], dict['DevFormatSTime'], dict['DevFormatCTime'],
-                                        dict['ChgMode'], dict['RemainT_Hr'], dict['RemainT_Hr']))
-            logger_sub.debug('idx : {},\ntype : {},\nmac : {},\naccount : {},\nuid : {}\n'.format(CDV[i].Dev_idx, CDV[i].Dev_type, CDV[i].Dev_mac, CDV[i].Dev_account, CDV[i].Dev_uid))
-        fp.close()
+        with open('/DaBai/python/OnlineChgList.json', 'r') as fp :
+            json_s = fp.read()
+            list_f = json.loads(json_s)
+            List_len = len(list_f)
+            logger_sub.debug('List_len is {}'.format(List_len))
+            for i in range(0, List_len) :
+                dict = list_f[i]
+                CDV.append(ChargeDevice(dict['Dev_idx'], dict['Dev_type'], dict['Dev_mac'], dict['Dev_account'], dict['Dev_uid'],
+                                            dict['StartTime'], dict['CurrentTime'], dict['DevFormatSTime'], dict['DevFormatCTime'],
+                                            dict['ChgMode'], dict['RemainT_Hr'], dict['RemainT_Hr']))
+                logger_sub.debug('idx : {},\ntype : {},\nmac : {},\naccount : {},\nuid : {}\n'.format(CDV[i].Dev_idx, CDV[i].Dev_type, CDV[i].Dev_mac, CDV[i].Dev_account, CDV[i].Dev_uid))
     except IOError :
         CDV = [ChargeDevice()]
         List_len = 0

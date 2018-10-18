@@ -6,7 +6,7 @@ import serial
 logger_uart = logging.getLogger('UART_LOG')
 
 class UartPara :
-    def __init__(self, port = '/dev/ttyS2', br = 57600, db = 8, pr = 'N', sb = 1, to = 0) :
+    def __init__(self, port = '/dev/ttyS0', br = 57600, db = 8, pr = 'N', sb = 1, to = 0) :
         self.devpath = port
         self.baudrate = br
         self.databyte = db

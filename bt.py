@@ -13,8 +13,8 @@ from string_utils import *
 
 logger_BTM = logging.getLogger('BTModule_LOG')
 
-BM78SPP05MC2 = 1
-BM78SPP05NC2 = 0
+BM78SPP05MC2 = 0
+BM78SPP05NC2 = 1
 
 RXBUFSIZE = 256
 FILESIZE = 4096
